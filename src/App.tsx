@@ -1,10 +1,9 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import cn from 'classnames';
 import 'bulma/css/bulma.css';
 import './App.scss';
 
-export const goodsFromServer = [
+const goodsFromServer: string[] = [
   'Dumplings',
   'Carrot',
   'Eggs',
@@ -17,41 +16,25 @@ export const goodsFromServer = [
   'Garlic',
 ];
 
-const SORT_FIELD_NAME = 'name';
-const SORT_FIELD_LENGTH = 'length';
+enum SortType {
+  None = '',
+  Name = 'name',
+  Length = 'length',
+}
 
 export const App: React.FC = () => {
-  const [visibleGoods, setVisibleGoods] = useState([...goodsFromServer]);
-  const [reversed, setReversed] = useState(false);
-  const [sortField, setSortField] = useState('');
+  const [visibleGoods, setVisibleGoods] = useState<string[]>([...goodsFromServer]);
+  const [reversed, setReversed] = useState<boolean>(false);
+  const [sortType, setSortType] = useState<SortType>(SortType.None);
 
   let visibleGoodsCopy = [...visibleGoods];
 
-  // const sortByName = () => {
-  //   setVisibleGoods(visibleGoodsCopy.toSorted((a, b) => a.localeCompare(b)));
-  //   setSortField(SORT_FIELD_NAME);
-  // };
-
-  // const sortByLength = () => {
-  //   setVisibleGoods(visibleGoodsCopy.toSorted((a, b) => a.length - b.length));
-  //   setSortField(SORT_FIELD_LENGTH);
-  // };
-
-  const reset = () => {
-    setVisibleGoods(goodsFromServer);
-    setSortField('');
-    setReversed(false);
-  };
-
-  const showResetButton = sortField || reversed;
-
-  // eslint-disable-next-line default-case
-  switch (sortField) {
-    case SORT_FIELD_NAME:
+  switch (sortType) {
+    case SortType.Name:
       visibleGoodsCopy.sort((a, b) => a.localeCompare(b));
       break;
 
-    case SORT_FIELD_LENGTH:
+    case SortType.Length:
       visibleGoodsCopy.sort((a, b) => a.length - b.length);
       break;
   }
@@ -60,16 +43,23 @@ export const App: React.FC = () => {
     visibleGoodsCopy = visibleGoodsCopy.toReversed();
   }
 
+  const reset = (): void => {
+    setVisibleGoods([...goodsFromServer]);
+    setSortType(SortType.None);
+    setReversed(false);
+  };
+
+  const showResetButton = sortType !== SortType.None || reversed;
+
   return (
     <div className="section content">
       <div className="buttons">
         <button
           type="button"
           className={cn('button is-info', {
-            'is-light': sortField !== SORT_FIELD_NAME,
+            'is-light': sortType !== SortType.Name,
           })}
-          // onClick={sortByName}
-          onClick={() => setSortField(SORT_FIELD_NAME)}
+          onClick={() => setSortType(SortType.Name)}
         >
           Sort alphabetically
         </button>
@@ -77,20 +67,19 @@ export const App: React.FC = () => {
         <button
           type="button"
           className={cn('button is-info', {
-            'is-light': sortField !== SORT_FIELD_LENGTH,
+            'is-light': sortType !== SortType.Length,
           })}
-          // onClick={sortByLength}
-          onClick={() => setSortField(SORT_FIELD_LENGTH)}
+          onClick={() => setSortType(SortType.Length)}
         >
           Sort by length
         </button>
 
         <button
           type="button"
-          onClick={() => setReversed(!reversed)}
           className={cn('button is-info', {
             'is-light': !reversed,
           })}
+          onClick={() => setReversed(prev => !prev)}
         >
           Reverse
         </button>
@@ -104,17 +93,10 @@ export const App: React.FC = () => {
             Reset
           </button>
         )}
-        {/* <button
-          type="button"
-          className="button is-danger is-light"
-          onClick={reset}
-        >
-          Reset
-        </button> */}
       </div>
 
       <ul>
-        {visibleGoodsCopy.map(good => (
+        {visibleGoodsCopy.map((good) => (
           <li className="good" data-cy="Good" key={good}>
             {good}
           </li>
